@@ -1,284 +1,646 @@
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-canvas.width = 320;
-canvas.height = 480;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
 
 
-// Oyun değişkenleri
-let score = 0;
-let gameOver = false;
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth / window.innerHeight,
+0.1,
+1000
+);
 
 
-// Kuş
-const bird = {
-    x: 50,
-    y: 150,
-    width: 34,
-    height: 34,
-    gravity: 0.25,
-    velocity: 0,
-    jump: -4.6
-};
+const renderer = new THREE.WebGLRenderer({
+antialias:true
+});
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+document.body.appendChild(renderer.domElement);
 
 
-// Borular
-let pipes = [];
-const pipeWidth = 50;
-const pipeGap = 120;
-let frame = 0;
+
+// IŞIK
+
+const light = new THREE.DirectionalLight(
+0xffffff,
+1
+);
+
+light.position.set(10,20,10);
+scene.add(light);
 
 
-// Zıplama
-function flap(e) {
+scene.add(
+new THREE.AmbientLight(
+0xffffff,
+0.5
+)
+);
 
-    if (e && e.type === "touchstart") {
-        e.preventDefault();
-    }
 
-    if (gameOver) {
-        resetGame();
-        return;
-    }
 
-    bird.velocity = bird.jump;
+
+// =================
+// ZEMİN (DİNAMİK ÇİM DOKUSU)
+// =================
+
+const canvas = document.createElement('canvas');
+canvas.width = 128;
+canvas.height = 128;
+const ctx = canvas.getContext('2d');
+
+ctx.fillStyle = '#3b7d2a';
+ctx.fillRect(0, 0, 128, 128);
+
+for (let i = 0; i < 1500; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? '#2e661f' : '#4a9c35';
+    ctx.fillRect(Math.random() * 128, Math.random() * 128, 2, 2);
+}
+
+const floorTexture = new THREE.CanvasTexture(canvas);
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(40, 40);
+
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshStandardMaterial({
+        map: floorTexture,
+        roughness: 0.9
+    })
+);
+
+floor.rotation.x = -Math.PI/2;
+scene.add(floor);
+
+
+
+
+
+// DUVARLAR
+
+function wall(x,y,z,w,h,d){
+
+let obj = new THREE.Mesh(
+
+new THREE.BoxGeometry(
+w,h,d
+),
+
+new THREE.MeshStandardMaterial({
+color:0x555555
+})
+
+);
+
+obj.position.set(x,y,z);
+
+scene.add(obj);
+
 }
 
 
-// Sıfırlama
-function resetGame() {
+wall(0,2,-20,40,4,1);
+wall(0,2,20,40,4,1);
+wall(-20,2,0,1,4,40);
+wall(20,2,0,1,4,40);
 
-    bird.y = 150;
-    bird.velocity = 0;
 
-    pipes = [];
-    score = 0;
-    frame = 0;
 
-    gameOver = false;
+
+
+// KAMERA
+
+camera.position.set(
+0,
+1.6,
+5
+);
+
+scene.add(camera);
+
+
+
+
+
+// =====================
+// İLK FPS SİLAH
+// =====================
+
+const gun = new THREE.Group();
+
+
+const barrel = new THREE.Mesh(
+
+    new THREE.BoxGeometry(
+        0.12,
+        0.12,
+        0.8
+    ),
+
+    new THREE.MeshStandardMaterial({
+        color:0x111111
+    })
+
+);
+
+
+barrel.position.z=-0.4;
+
+
+
+
+const handle = new THREE.Mesh(
+
+    new THREE.BoxGeometry(
+        0.18,
+        0.35,
+        0.25
+    ),
+
+    new THREE.MeshStandardMaterial({
+        color:0x333333
+    })
+
+);
+
+
+handle.position.y=-0.25;
+
+
+
+gun.add(barrel);
+gun.add(handle);
+
+
+
+gun.position.set(
+    0.35,
+    -0.35,
+    -0.7
+);
+
+
+
+camera.add(gun);
+
+
+// =================
+// JOYSTICK
+// =================
+
+
+let moveX=0;
+let moveY=0;
+
+
+const joystick=document.getElementById("joystick");
+const stick=document.getElementById("stick");
+
+
+
+if(joystick){
+
+
+joystick.addEventListener(
+"touchmove",
+(e)=>{
+
+
+let t=e.touches[0];
+
+let r=joystick.getBoundingClientRect();
+
+
+let x=t.clientX-r.left-60;
+let y=t.clientY-r.top-60;
+
+
+
+let power=Math.sqrt(
+x*x+y*y
+);
+
+
+if(power>40){
+
+x=x/power*40;
+y=y/power*40;
+
 }
 
 
-window.addEventListener("keydown", flap);
-window.addEventListener("touchstart", flap, { passive:false });
 
+stick.style.left=
+35+x+"px";
 
-// Oyun döngüsü
-function loop() {
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+stick.style.top=
+35+y+"px";
 
 
-    if (!gameOver) {
+moveX=x/40;
+moveY=y/40;
 
-        frame++;
 
 
-        // Kuş fiziği
-        bird.velocity += bird.gravity;
-        bird.y += bird.velocity;
+});
 
 
-        if (bird.y <= 0) {
-            bird.y = 0;
-            bird.velocity = 0;
-        }
 
+joystick.addEventListener(
+"touchend",
+()=>{
 
-        if (bird.y + bird.height >= canvas.height) {
-            gameOver = true;
-        }
 
+moveX=0;
+moveY=0;
 
 
-        // Boru oluşturma
-        if (frame % 100 === 0) {
+stick.style.left="35px";
+stick.style.top="35px";
 
-            let topHeight = Math.floor(
-                Math.random() * (canvas.height - pipeGap - 100)
-            ) + 40;
 
+});
 
-            pipes.push({
-                x: canvas.width,
-                top: topHeight,
-                passed:false
-            });
-        }
 
-
-
-        // Borular
-        for (let i=0; i<pipes.length; i++) {
-
-            let p = pipes[i];
-
-            p.x -= 2;
-
-
-            let bottomY = p.top + pipeGap;
-
-
-            ctx.fillStyle = "green";
-
-            ctx.fillRect(
-                p.x,
-                0,
-                pipeWidth,
-                p.top
-            );
-
-            ctx.fillRect(
-                p.x,
-                bottomY,
-                pipeWidth,
-                canvas.height-bottomY
-            );
-
-
-
-            // Çarpışma
-
-            let hitTop =
-            bird.x + bird.width > p.x &&
-            bird.x < p.x + pipeWidth &&
-            bird.y < p.top;
-
-
-            let hitBottom =
-            bird.x + bird.width > p.x &&
-            bird.x < p.x + pipeWidth &&
-            bird.y + bird.height > bottomY;
-
-
-            if (hitTop || hitBottom) {
-                gameOver = true;
-            }
-
-
-
-            // Skor
-
-            if (
-                p.x + pipeWidth < bird.x &&
-                !p.passed
-            ) {
-                score++;
-                p.passed = true;
-            }
-
-
-
-            if (p.x + pipeWidth < 0) {
-                pipes.splice(i,1);
-                i--;
-            }
-        }
-
-    }
-
-
-
-    // 🐤 KUŞ ÇİZİMİ
-
-    // Gövde
-    ctx.fillStyle = "yellow";
-    ctx.beginPath();
-
-    ctx.arc(
-        bird.x + 17,
-        bird.y + 17,
-        17,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    // Göz
-    ctx.fillStyle = "black";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        bird.x + 24,
-        bird.y + 10,
-        3,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    // Gaga
-    ctx.fillStyle = "orange";
-
-    ctx.fillRect(
-        bird.x + 30,
-        bird.y + 15,
-        10,
-        7
-    );
-
-
-    // Kanat
-    ctx.fillStyle = "gold";
-
-    ctx.fillRect(
-        bird.x + 7,
-        bird.y + 20,
-        12,
-        6
-    );
-
-
-
-    // Skor
-
-    ctx.fillStyle = "white";
-    ctx.font = "20px Arial";
-
-    ctx.fillText(
-        "Skor: " + score,
-        10,
-        30
-    );
-
-
-
-    // Game Over
-
-    if (gameOver) {
-
-        ctx.fillStyle = "red";
-        ctx.font = "30px Arial";
-
-        ctx.fillText(
-            "Game Over",
-            85,
-            220
-        );
-
-
-        ctx.fillStyle = "white";
-        ctx.font = "14px Arial";
-
-        ctx.fillText(
-            "CLICK TO RESTART",
-            100,
-            250
-        );
-    }
-
-
-
-    requestAnimationFrame(loop);
 }
 
-        // Borular yerine kullanılacak görsel (20260314_205553.png)
-        const pipeImg = new Image();
-        pipeImg.src = "20260314_205553";
 
-loop();
+
+
+// =====================
+// 3 PARMAK FPS KAMERA
+// =====================
+let yaw = 0;
+let pitch = 0;
+
+let lastX = 0;
+let lastY = 0;
+let lookId = null;
+
+
+document.addEventListener(
+"touchstart",
+(e)=>{
+
+
+for(let t of e.changedTouches){
+
+
+if(
+t.clientX > window.innerWidth / 2 &&
+lookId === null
+){
+
+
+lookId = t.identifier;
+
+
+lastX = t.clientX;
+lastY = t.clientY;
+
+
+}
+
+
+}
+
+
+});
+
+
+
+
+
+document.addEventListener(
+"touchmove",
+(e)=>{
+
+
+for(let t of e.changedTouches){
+
+
+if(t.identifier === lookId){
+
+
+let dx =
+t.clientX - lastX;
+
+
+let dy =
+t.clientY - lastY;
+
+
+
+yaw -= dx * 0.0025;
+
+pitch -= dy * 0.002;
+
+
+
+pitch = Math.max(
+-0.6,
+Math.min(0.6,pitch)
+);
+
+
+
+lastX = t.clientX;
+lastY = t.clientY;
+
+
+}
+
+
+}
+
+
+});
+
+
+
+
+
+document.addEventListener(
+"touchend",
+(e)=>{
+
+
+for(let t of e.changedTouches){
+
+
+if(t.identifier === lookId){
+
+
+lookId = null;
+
+
+}
+
+
+}
+
+
+});
+
+
+
+
+
+function cameraSmooth(){
+
+
+camera.rotation.order="YXZ";
+
+
+camera.rotation.y +=
+(yaw-camera.rotation.y)*0.15;
+
+
+camera.rotation.x +=
+(pitch-camera.rotation.x)*0.15;
+
+
+}
+
+// =================
+// HAREKET
+// =================
+
+
+function update(){
+
+
+let forward=new THREE.Vector3();
+
+
+camera.getWorldDirection(
+forward
+);
+
+
+forward.y=0;
+forward.normalize();
+
+
+
+let right=new THREE.Vector3();
+
+
+right.crossVectors(
+camera.up,
+forward
+).normalize();
+
+
+
+let speed=0.08;
+
+
+
+camera.position.x -=
+forward.x*moveY*speed;
+
+
+camera.position.z -=
+forward.z*moveY*speed;
+
+
+
+camera.position.x -=
+right.x*moveX*speed;
+
+
+camera.position.z -=
+right.z*moveX*speed;
+
+
+}
+
+
+
+
+
+// =================
+// ATEŞ + MERMİ
+// =================
+
+let ammo = 30;
+let maxAmmo = 30;
+let reloading = false;
+
+
+function updateAmmo(){
+
+let text=document.getElementById("ammo");
+
+if(text){
+
+text.innerHTML =
+ammo+" / "+maxAmmo;
+
+}
+
+}
+
+
+
+function reload(){
+
+if(reloading) return;
+
+
+reloading=true;
+
+
+setTimeout(()=>{
+
+
+ammo=maxAmmo;
+
+reloading=false;
+
+updateAmmo();
+
+
+},1500);
+
+
+}
+
+
+
+
+function shoot(){
+
+
+if(reloading) return;
+
+
+
+if(ammo<=0){
+
+reload();
+
+return;
+
+}
+
+
+
+ammo--;
+
+updateAmmo();
+
+
+
+let bullet=new THREE.Mesh(
+
+new THREE.SphereGeometry(0.05),
+
+new THREE.MeshBasicMaterial({
+color:0xffff00
+})
+
+);
+
+
+
+bullet.position.copy(
+camera.position
+);
+
+
+
+let dir=new THREE.Vector3();
+
+
+camera.getWorldDirection(dir);
+
+
+
+scene.add(bullet);
+
+
+
+let timer=setInterval(()=>{
+
+
+bullet.position.add(
+
+dir.clone()
+.multiplyScalar(0.5)
+
+);
+
+
+
+},20);
+
+
+
+setTimeout(()=>{
+
+
+clearInterval(timer);
+
+scene.remove(bullet);
+
+
+},1000);
+
+
+
+}
+
+
+
+const fire=document.getElementById("fire");
+
+
+if(fire){
+
+fire.addEventListener(
+"touchstart",
+shoot
+);
+
+}
+
+
+
+updateAmmo();
+
+
+// =================
+// BAŞLAT
+// =================
+
+
+function animate(){
+
+requestAnimationFrame(
+animate
+);
+
+
+update();
+
+cameraSmooth();
+
+renderer.render(
+scene,
+camera
+);
+
+}
+
+
+// BAŞLAT
+
+animate();
