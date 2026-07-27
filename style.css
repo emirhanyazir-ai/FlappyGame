@@ -1,14 +1,254 @@
 body {
-    margin: 0;
-    padding: 0;
-    background-color: #70c5ce; /* Flappy Bird gökyüzü mavisi */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    margin:0;
+    overflow:hidden;
+    background:black;
 }
 
 canvas {
-    border: 2px solid #000;
-    background-color: #70c5ce;
+    display:block;
 }
+
+#joystick {
+    position:fixed;
+    left:40px;
+    bottom:40px;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.2);
+    touch-action:none;
+}
+
+#stick {
+    position:absolute;
+    left:35px;
+    top:35px;
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.6);
+}#crosshair {
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    color:white;
+    font-size:35px;
+}
+
+#fire {
+    position:fixed;
+    right:40px;
+    bottom:50px;
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,0,0,0.5);
+    color:white;
+    font-size:30px;
+}#hp{
+    position:fixed;
+    top:20px;
+    left:20px;
+    color:white;
+    font-size:25px;
+    font-family:Arial;
+}
+#health{
+    position:fixed;
+    top:20px;
+    left:20px;
+    width:220px;
+    height:25px;
+    background:#222;
+    border:3px solid white;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+
+#healthBar{
+    width:100%;
+    height:100%;
+    background:red;
+}
+
+
+#healthText{
+    position:absolute;
+    width:100%;
+    text-align:center;
+    top:0;
+    color:white;
+    font-size:18px;
+    font-family:Arial;
+}
+body{
+    margin:0;
+    overflow:hidden;
+    touch-action:none;
+}
+
+
+/* JOYSTICK */
+
+#joystick{
+
+    position:fixed;
+
+    left:30px;
+    bottom:40px;
+
+    width:120px;
+    height:120px;
+
+    background:rgba(255,255,255,0.2);
+
+    border-radius:50%;
+
+}
+
+
+#stick{
+
+    position:absolute;
+
+    left:35px;
+    top:35px;
+
+    width:50px;
+    height:50px;
+
+    background:rgba(255,255,255,0.5);
+
+    border-radius:50%;
+
+}
+
+
+
+
+
+/* ATEŞ BUTONU */
+
+#fire{
+
+    position:fixed;
+
+    right:30px;
+    bottom:50px;
+
+    width:90px;
+    height:90px;
+
+    border-radius:50%;
+
+    background:red;
+
+    color:white;
+
+    font-size:30px;
+
+    border:none;
+
+}
+
+
+
+/* MERMİ */
+
+#ammo{
+
+    position:fixed;
+
+    right:30px;
+
+    bottom:160px;
+
+    color:white;
+
+    font-size:28px;
+
+    font-family:Arial;
+
+    text-shadow:2px 2px black;
+
+}
+
+
+
+/* CAN BAR */
+
+#health{
+
+    position:fixed;
+
+    top:20px;
+
+    left:20px;
+
+    width:220px;
+
+    height:25px;
+
+    background:#222;
+
+    border:2px solid white;
+
+    border-radius:8px;
+
+    overflow:hidden;
+
+}
+
+
+#healthBar{
+
+    width:100%;
+
+    height:100%;
+
+    background:red;
+
+}
+
+
+
+#healthText{
+
+    position:absolute;
+
+    width:100%;
+
+    text-align:center;
+
+    top:0;
+
+    color:white;
+
+    font-size:18px;
+
+    font-family:Arial;
+
+}
+#crosshair{
+
+    position:fixed;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    color:white;
+
+    font-size:35px;
+
+    font-family:Arial;
+
+    text-shadow:2px 2px black;
+
+    pointer-events:none;
+
+    }
