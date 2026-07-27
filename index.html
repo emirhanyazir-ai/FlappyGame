@@ -1,14 +1,82 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Flappy Bird</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<html lang="tr">
 
-<canvas id="game"></canvas>
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FPS Game</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+<div id="crosshair">
++
+</div>
+
+<!-- JOYSTICK -->
+
+<div id="joystick">
+
+    <div id="stick"></div>
+
+</div>
+
+
+
+<!-- ATEŞ BUTONU -->
+
+<button id="fire">
+🔥
+</button>
+
+
+
+<!-- MERMİ SAYISI -->
+
+<div id="ammo">
+30 / 30
+</div>
+
+
+
+<!-- CAN BAR -->
+
+<div id="health">
+
+    <div id="healthBar"></div>
+
+    <span id="healthText">
+    100
+    </span>
+
+</div>
+
+
+
+<!-- THREE.JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160/examples/js/loaders/GLTFLoader.js"></script>
+
+<!-- OYUN -->
 
 <script src="game.js"></script>
 
+
 </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <title>FPS Game</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
 </html>
